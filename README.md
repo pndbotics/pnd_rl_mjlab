@@ -15,7 +15,7 @@ and sim-to-real deployment.
 
 | <div align="center">  MuJoCo </div>                                                                                                                                           | <div align="center"> Physical </div>                                                                                                                                               |
 |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <div style="width:250px; height:150px; overflow:hidden;"><img src="doc/gif/g1-velocity.gif" style="width:100%; height:100%; object-fit:cover; object-position:center;"></div> | <div style="width:250px; height:150px; overflow:hidden;"><img src="doc/gif/g1-velocity-real.gif" style="width:100%; height:100%; object-fit:cover; object-position:center;"></div> |
+| <div style="width:250px; height:150px; overflow:hidden;"><img src="doc/gif/adam_sp-velocity.gif" style="width:100%; height:100%; object-fit:cover; object-position:center;"></div> | <div style="width:250px; height:150px; overflow:hidden;"><img src="doc/gif/adam_sp-velocity-real.gif" style="width:100%; height:100%; object-fit:cover; object-position:center;"></div> |
 
 </div>
 
@@ -71,11 +71,11 @@ Train a Adam SP to mimic reference motion sequences.
 
 #### 2.1 Prepare Motion Files
 
-Prepare csv motion files in mjlab/motions/g1/ and convert them to npz format:
+Prepare csv motion files in mjlab/motions/adam_sp/ and convert them to npz format:
 
 ```bash
 python scripts/csv_to_npz.py \
---input-file mjlab/motions/g1/dance1_subject2.csv \
+--input-file mjlab/motions/adam_sp/dance1_subject2.csv \
 --output-name dance1_subject2.npz \
 --input-fps 30 \
 --output-fps 50
@@ -88,7 +88,7 @@ python scripts/csv_to_npz.py \
 After generating the NPZ file, launch imitation training:
 
 ```bash
-python scripts/train.py Mjlab-Tracking-Flat-Adam-SP --motion_file=mjlab/motions/g1/dance1_subject2.npz --env.scene.num-envs=4096
+python scripts/train.py Mjlab-Tracking-Flat-Adam-SP --motion_file=mjlab/motions/adam_sp/dance1_subject2.npz --env.scene.num-envs=4096
 ```
 
 </div>
@@ -116,12 +116,12 @@ To visualize policy behavior in MuJoCo:
 
 Velocity tracking:
 ```bash
-python scripts/play.py Mjlab-Velocity-Flat-Adam-SP --checkpoint_file=logs/rsl_rl/g1_velocity/2026-xx-xx_xx-xx-xx/model_xx.pt
+python scripts/play.py Mjlab-Velocity-Flat-Adam-SP --checkpoint_file=logs/rsl_rl/adam_sp_velocity/2026-xx-xx_xx-xx-xx/model_xx.pt
 ```
 
 Motion imitation:
 ```bash
-python scripts/play.py Mjlab-Tracking-Flat-Adam-SP --motion_file=mjlab/motions/g1/dance1_subject2.npz --checkpoint_file=logs/rsl_rl/g1_tracking/2026-xx-xx_xx-xx-xx/model_xx.pt
+python scripts/play.py Mjlab-Tracking-Flat-Adam-SP --motion_file=mjlab/motions/adam_sp/dance1_subject2.npz --checkpoint_file=logs/rsl_rl/adam_sp_tracking/2026-xx-xx_xx-xx-xx/model_xx.pt
 ```
 
 **Note**：
@@ -130,11 +130,7 @@ python scripts/play.py Mjlab-Tracking-Flat-Adam-SP --motion_file=mjlab/motions/g
 
 For a **Python-based** FSM (passive, fixed pose, locomotion, Beyond Mimic) in MuJoCo or on-robot DDS, see **[deploy/README.md](deploy/README.md)** and **Section 4.1** below.
 
-**Visualization**：
 
-| Go2                              | G1                             | H1_2                               | G1_mimic                          |
-|----------------------------------|--------------------------------|------------------------------------|-----------------------------------|
-| ![go2](doc/gif/go2-velocity.gif) | ![g1](doc/gif/g1-velocity.gif) | ![h1_2](doc/gif/h1_2-velocity.gif) | ![g1_mimic](doc/gif/g1-mimic.gif) |
 
 ### 4. Deployment
 
@@ -178,56 +174,11 @@ python deploy_real/deploy_real.py
 
 **Swap models or motion**: place weights in the policy’s `deploy/policy/<name>/model/` and update `policy_path` / `motion_path` in that policy’s YAML; adjust `num_actions` and observation code if dimensions change.
 
----
 
-#### 4.2 C++ deployment (example: `deploy/robots/g1`)
-
-<div style="margin-left: 20px;">
-
-##### 4.2.1 Power On the Robot
-Start the robot in suspended state and wait until it enters `zero-torque` mode.
-
-##### 4.2.2 Enable Debug Mode
-While in `zero-torque` mode, press `L2 + R2` on the controller. The robot will enter `debug mode` with joint damping enabled.
-
-##### 4.2.3 Connect to the Robot
-Connect your PC to the robot via Ethernet. Configure the network as:
-- Address：`192.168.123.222`
-- Netmask：`255.255.255.0`
-
-Use `ifconfig` to determine the Ethernet device name for deployment.
-
-##### 4.2.4 Compilation
-
-Example: Adam SP velocity control.
-Place `policy.onnx` and `policy.onnx.data` into: `deploy/robots/g1/config/policy/velocity/v0/exported`.
-Then compile:
-
-```bash
-cd deploy/robots/g1
-mkdir build && cd build
-cmake .. && make
-```
-
-##### 4.2.5 Run the C++ controller
-
-After Compilation, run：
-
-```bash
-cd deploy/robots/g1/build
-./g1_ctrl --network=enp5s0
-```
-
-**Arguments**：
-- `network`: Ethernet interface name (e.g., `enp5s0`)
 
 </div>
 
-**Deployment Results**：
 
-| Go2                                                    | G1                                                    | H1_2           | G1_mimic                                           |
-|--------------------------------------------------------|-------------------------------------------------------|----------------|----------------------------------------------------|
-| <img src="doc/gif/go2-velocity-real.gif" width="300"/> | <img src="doc/gif/g1-velocity-real.gif" width="300"/> | <img src="doc/gif/h1_2-velocity-real.gif" width="300"/> | <img src="doc/gif/g1-mimic-real.gif" width="300"/> |
 
 
 ## 🎉  Acknowledgements
