@@ -1,3 +1,0 @@
-xml_path: "adam_description/scene_mjx_feetonly_flat_terrain.xml"
-simulation_dt: 0.002
-control_decimation: 10

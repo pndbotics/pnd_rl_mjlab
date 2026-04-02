@@ -1,0 +1,62 @@
+<mujoco model="adam_sp scene">
+    <include file="adam_sp.xml"/>
+
+    <statistic center="0 0 1" extent="1.8" />
+	<visual>
+		<headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+		<rgba haze="0.15 0.25 0.35 1" />
+		<global azimuth="160" elevation="-20" />
+	</visual>
+	<asset>
+		<texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+		<texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+		<material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2" />
+	</asset>
+	<worldbody>
+		<light pos="0 0 3.5" dir="0 0 -1" directional="true" />
+		<geom name="floor" size="0 0 0.05" type="plane" material="groundplane" contype="1" conaffinity="1" />
+	</worldbody>
+
+	<contact>
+		<!-- 左脚与地面 -->
+		<pair name="left_foot1_floor" geom1="left_foot1_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_foot2_floor" geom1="left_foot2_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_foot3_floor" geom1="left_foot3_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_foot4_floor" geom1="left_foot4_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_foot5_floor" geom1="left_foot5_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_foot6_floor" geom1="left_foot6_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_foot7_floor" geom1="left_foot7_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_foot8_floor" geom1="left_foot8_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_foot9_floor" geom1="left_foot9_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<!-- 右脚与地面 -->
+		<pair name="right_foot1_floor" geom1="right_foot1_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_foot2_floor" geom1="right_foot2_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_foot3_floor" geom1="right_foot3_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_foot4_floor" geom1="right_foot4_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_foot5_floor" geom1="right_foot5_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_foot6_floor" geom1="right_foot6_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_foot7_floor" geom1="right_foot7_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_foot8_floor" geom1="right_foot8_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_foot9_floor" geom1="right_foot9_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<!-- 其他身体与地面（防穿地/倒地支撑） -->
+		<pair name="pelvis_floor" geom1="pelvis_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_hip_floor" geom1="left_hip_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_hip_floor" geom1="right_hip_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_thigh_up_floor" geom1="left_thigh_up_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_thigh_down_floor" geom1="left_thigh_down_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_thigh_up_floor" geom1="right_thigh_up_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_thigh_down_floor" geom1="right_thigh_down_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_shin_up_floor" geom1="left_shin_up_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_shin_down_floor" geom1="left_shin_down_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_shin_up_floor" geom1="right_shin_up_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_shin_down_floor" geom1="right_shin_down_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="torso_floor" geom1="torso" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_hand_floor" geom1="left_hand_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_hand_floor" geom1="right_hand_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_shoulder_floor" geom1="left_shoulder_yaw_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_shoulder_floor" geom1="right_shoulder_yaw_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="left_elbow_floor" geom1="left_elbow_yaw_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+		<pair name="right_elbow_floor" geom1="right_elbow_yaw_collision" geom2="floor" condim="3" friction="1.0 1.0"/>
+	</contact>
+
+</mujoco>
