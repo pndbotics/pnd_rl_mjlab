@@ -120,6 +120,24 @@ def angular_momentum_penalty(
   return angmom_magnitude_sq
 
 
+def pelvis_height_reward(
+  env: ManagerBasedRlEnv,
+  target_height: float = 0.86,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Reward pelvis height with saturation above target.
+
+  Reward is 1.0 when pelvis height >= target_height.
+  Below target, reward increases linearly as height approaches target.
+  """
+  asset: Entity = env.scene[asset_cfg.name]
+  pelvis_pos_w = asset.data.body_link_pos_w[:, asset_cfg.body_ids, :]
+  pelvis_height = pelvis_pos_w.squeeze(1)[:, 2]
+  reward = torch.clamp(pelvis_height / target_height, min=0.0, max=1.0)
+  env.extras["log"]["Metrics/pelvis_height_mean"] = torch.mean(pelvis_height)
+  return reward
+
+
 def feet_air_time(
   env: ManagerBasedRlEnv,
   sensor_name: str,

@@ -197,7 +197,7 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
   rewards = {
     "track_linear_velocity": RewardTermCfg(
       func=mdp.track_linear_velocity,
-      weight=2.0,
+      weight=1.0,
       params={"command_name": "twist", "std": math.sqrt(0.25)},
     ),
     "track_angular_velocity": RewardTermCfg(
@@ -235,7 +235,7 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
     "action_rate_l2": RewardTermCfg(func=mdp.action_rate_l2, weight=-0.05),
     "foot_clearance": RewardTermCfg(
       func=mdp.feet_clearance,
-      weight=-2.0,
+      weight=-1.0,
       params={
         "target_height": 0.10,
         "command_name": "twist",
@@ -328,7 +328,7 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
       azimuth=90.0,
     ),
     sim=SimulationCfg(
-      nconmax=256,
+      nconmax=35,
       njmax=300,
       mujoco=MujocoCfg(
         timestep=0.005,

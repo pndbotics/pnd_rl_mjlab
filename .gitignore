@@ -1,2 +1,8 @@
-/.vscode
-__pycache__/
+*.egg-info
+.idea
+outputs
+logs
+wandb
+MUJOCO_LOG.TXT
+*.pyc
+*.ipynb_checkpoints/

@@ -1,0 +1,118 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Plot Observations",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/plot_observations.py",
+            "args": [
+                "/home/xiangyz/pnd_rl_mjlab/logs/rsl_rl/adam_sp_velocity/2026-02-13_18-36-51/observations.npz",
+                "--n-cols",
+                "${input:nCols}"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Python: Plot Observations (Custom Args)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/plot_observations.py",
+            "args": [
+                "/home/xiangyz/pnd_rl_mjlab/logs/rsl_rl/adam_sp_velocity/2026-02-13_18-36-51/observations.npz",
+                "--n-cols",
+                "${input:nCols}",
+                "--figsize",
+                "${input:figWidth}",
+                "${input:figHeight}"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Python: Plot Observations (Show Plot)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/plot_observations.py",
+            "args": [
+                "/home/xiangyz/pnd_rl_mjlab/logs/rsl_rl/adam_sp_velocity/2026-02-13_18-36-51/observations.npz",
+                "--show"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "DISPLAY": "${env:DISPLAY}"
+            }
+        },
+        {
+            "name": "Python: Train Mjlab Velocity Flat Adam SP 23DOF",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/train.py",
+            "args": [
+                "Mjlab-Velocity-Flat-Adam-SP-23DOF",
+                "--env.scene.num-envs=4096"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Python: Train Mjlab Velocity Flat Adam SP",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/train.py",
+            "args": [
+                "Mjlab-Velocity-Flat-Adam-SP",
+                "--env.scene.num-envs=4096"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "observationFile",
+            "type": "promptString",
+            "description": "Path to observations.npz file",
+            "default": "observations.npz"
+        },
+        {
+            "id": "outputDir",
+            "type": "promptString",
+            "description": "Output directory for plots",
+            "default": "observation_plots"
+        },
+        {
+            "id": "nCols",
+            "type": "promptString",
+            "description": "Number of columns in subplot grid",
+            "default": "4"
+        },
+        {
+            "id": "figWidth",
+            "type": "promptString",
+            "description": "Figure width (inches)",
+            "default": "16"
+        },
+        {
+            "id": "figHeight",
+            "type": "promptString",
+            "description": "Figure height (inches)",
+            "default": "12"
+        }
+    ]
+}

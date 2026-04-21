@@ -1,0 +1,1 @@
+nohup python scripts/train.py Mjlab-Velocity-Flat-Adam-SP-23DOF --env.scene.num_envs=4096  > "/root/autodl-fs/train_$(date +%Y%m%d_%H%M%S).log" 2>&1 &
