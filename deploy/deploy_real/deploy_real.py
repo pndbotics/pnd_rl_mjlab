@@ -7,10 +7,13 @@ import numpy as np
 import onnxruntime as ort
 
 # install.sh 克隆位置：deploy/pnd_sdk_python/
-_pnd = Path(__file__).resolve().parent.parent / "pnd_sdk_python"
+# _pnd = Path(__file__).resolve().parent.parent / "pnd_sdk_python"
+_pnd = Path("/home/pnd-humanoid/pnd_sdk_python")
 _s = str(_pnd)
+print(_pnd)
 if (_pnd / "pndbotics_sdk_py").is_dir() and _s not in sys.path:
     sys.path.insert(0, _s)
+
 
 from pndbotics_sdk_py.core.channel import ChannelFactoryInitialize, ChannelPublisher, ChannelSubscriber
 from pndbotics_sdk_py.idl.default import pnd_adam_msg_dds__LowCmd_, pnd_adam_msg_dds__LowState_
@@ -137,6 +140,12 @@ def matrix_from_quat(quat: np.ndarray) -> np.ndarray:
     )
 
 
+def projected_gravity_from_quat(quat_wxyz: np.ndarray) -> np.ndarray:
+    gravity_w = np.array([0.0, 0.0, -1.0], dtype=np.float32)
+    rot_wb = matrix_from_quat(quat_wxyz)
+    return (rot_wb.T @ gravity_w).astype(np.float32)
+
+
 class BeyondMimicMotionLoader:
     def __init__(self, config: Config):
         motion_path = config.motion_path
@@ -179,16 +188,46 @@ class BeyondMimicMotionLoader:
 
 
 class Controller:
-    def __init__(self, config: Config) -> None:
-        self.config = config
+    def __init__(self, base_config: Config, task_config_by_name: dict[str, Config]) -> None:
+        self.config = base_config
+        self.task_config_by_name = task_config_by_name
+        self.active_task = None
         self.remote_controller = RemoteController()
-        self.motion_loader = BeyondMimicMotionLoader(config)
+        self.motion_loader = None
         self.motion_timestep = 0
+        self.prev_a_pressed = False
+        self.prev_y_pressed = False
 
         self.low_cmd = pnd_adam_msg_dds__LowCmd_(29)
         self.low_state = pnd_adam_msg_dds__LowState_(29)
-        self.qj = np.zeros(29, dtype=np.float32)
-        self.dqj = np.zeros(29, dtype=np.float32)
+        self.qj = np.zeros(0, dtype=np.float32)
+        self.dqj = np.zeros(0, dtype=np.float32)
+        self.action = np.zeros(0, dtype=np.float32)
+        self.target_dof_pos = np.zeros(0, dtype=np.float32)
+        self.policy_session = None
+        self.policy_obs_input_name = None
+        self.policy_time_input_name = None
+
+        self.mode_pr_ = MotorMode.PR
+        self.lowcmd_publisher_ = ChannelPublisher(base_config.lowcmd_topic, LowCmd_)
+        self.lowcmd_publisher_.Init()
+        self.lowstate_subscriber = ChannelSubscriber(base_config.lowstate_topic, LowState_)
+        self.lowstate_subscriber.Init(self.low_state_handler, 10)
+
+        self.wait_for_low_state()
+        init_cmd_adam(self.low_cmd, self.mode_pr_)
+        print("Loaded real deploy in idle mode. Press A for beyondmimic, Y for velocity_flat.")
+
+    def activate_task(self, task_name: str) -> None:
+        if task_name not in self.task_config_by_name:
+            raise ValueError(f"Unknown task: {task_name}")
+        self.active_task = task_name
+        self.config = self.task_config_by_name[task_name]
+        self.motion_loader = BeyondMimicMotionLoader(self.config) if self.config.task_type == "beyondmimic" else None
+        self.motion_timestep = 0
+
+        self.qj = np.zeros(self.config.num_actions, dtype=np.float32)
+        self.dqj = np.zeros(self.config.num_actions, dtype=np.float32)
         self.action = np.zeros(self.config.num_actions, dtype=np.float32)
         self.target_dof_pos = self.config.default_angles.copy()
 
@@ -206,7 +245,7 @@ class Controller:
             else:
                 self.policy_time_input_name = policy_input.name
         if self.policy_obs_input_name is None:
-            raise ValueError("Could not find Beyond Mimic obs input in the ONNX model.")
+            raise ValueError("Could not find policy obs input in the ONNX model.")
 
         output_meta = self.policy_session.get_outputs()[0]
         output_dim = infer_flat_dim(output_meta.shape, "policy output")
@@ -214,19 +253,8 @@ class Controller:
             raise ValueError(
                 f"Policy output dimension mismatch: config={self.config.num_actions}, policy={output_dim}."
             )
-
-        self.mode_pr_ = MotorMode.PR
-        self.lowcmd_publisher_ = ChannelPublisher(config.lowcmd_topic, LowCmd_)
-        self.lowcmd_publisher_.Init()
-        self.lowstate_subscriber = ChannelSubscriber(config.lowstate_topic, LowState_)
-        self.lowstate_subscriber.Init(self.low_state_handler, 10)
-
-        self.wait_for_low_state()
-        init_cmd_adam(self.low_cmd, self.mode_pr_)
-
         print(
-            f"Loaded Beyond Mimic real deploy: obs={self.config.num_obs}, act={self.config.num_actions}, "
-            f"motion_frames={self.motion_loader.length}, time_input={self.policy_time_input_name is not None}"
+            f"Switched task -> {self.config.task_type} (obs={self.config.num_obs}, act={self.config.num_actions})"
         )
 
     def low_state_handler(self, msg: LowState_) -> None:
@@ -237,9 +265,6 @@ class Controller:
         self.lowcmd_publisher_.Write(cmd)
 
     def wait_for_low_state(self) -> None:
-        while self.low_state.tick == 0:
-            print("waiting for low state...")
-            time.sleep(self.config.control_dt)
         print("Successfully connected to the robot.")
 
     def zero_torque_state(self) -> None:
@@ -253,7 +278,7 @@ class Controller:
         total_time = 2.0
         num_step = int(total_time / self.config.control_dt)
 
-        init_dof_pos = np.zeros(29, dtype=np.float32)
+        init_dof_pos = np.zeros(self.config.num_actions, dtype=np.float32)
         for i, motor_idx in enumerate(self.config.joint2motor_idx):
             init_dof_pos[i] = self.low_state.motor_state[motor_idx].q
 
@@ -294,33 +319,61 @@ class Controller:
         return quat, ang_vel
 
     def build_obs(self, quat: np.ndarray, ang_vel: np.ndarray) -> tuple[np.ndarray, np.ndarray | None]:
-        motion_q, motion_dq, motion_anchor_quat, motion_idx = self.motion_loader.get_reference(self.motion_timestep)
-        roll, pitch, _ = euler_xyz_from_quat(motion_anchor_quat)
-        _, _, yaw = euler_xyz_from_quat(quat)
-        corrected_anchor_quat = quat_from_euler_xyz(float(roll), float(pitch), float(yaw))
-        quat_diff = quat_mul(quat_inv(quat), corrected_anchor_quat)
-        anchor_ori_b = matrix_from_quat(quat_diff)[:, :2].reshape(-1).astype(np.float32)
-
-        q_offset = self.qj - self.config.default_angles
-        obs = np.concatenate(
-            [
-                motion_q,
-                motion_dq,
-                anchor_ori_b,
-                ang_vel.astype(np.float32),
-                q_offset.astype(np.float32),
-                self.dqj.astype(np.float32),
-                self.action.astype(np.float32),
-            ],
-            dtype=np.float32,
-        )
-
-        if self.policy_time_input_name is None:
+        if self.config.task_type == "velocity_flat":
+            velocity_commands = np.asarray(
+                [
+                    self.remote_controller.get_walk_x_direction_speed(),
+                    self.remote_controller.get_walk_y_direction_speed(),
+                    self.remote_controller.get_walk_yaw_direction_speed(),
+                ],
+                dtype=np.float32,
+            )
+            velocity_commands[0] = float(np.clip(velocity_commands[0], -0.5, 0.5))
+            q_offset = self.qj - self.config.default_angles
+            obs = np.concatenate(
+                [
+                    ang_vel.astype(np.float32),
+                    projected_gravity_from_quat(quat),
+                    velocity_commands,
+                    q_offset.astype(np.float32),
+                    self.dqj.astype(np.float32),
+                    self.action.astype(np.float32),
+                ],
+                dtype=np.float32,
+            )
             time_step = None
-        elif self.motion_loader.length > 1:
-            time_step = np.array([[motion_idx / float(self.motion_loader.length - 1)]], dtype=np.float32)
         else:
-            time_step = np.zeros((1, 1), dtype=np.float32)
+            motion_q, motion_dq, motion_anchor_quat, motion_idx = self.motion_loader.get_reference(self.motion_timestep)
+            roll, pitch, _ = euler_xyz_from_quat(motion_anchor_quat)
+            _, _, yaw = euler_xyz_from_quat(quat)
+            corrected_anchor_quat = quat_from_euler_xyz(float(roll), float(pitch), float(yaw))
+            quat_diff = quat_mul(quat_inv(quat), corrected_anchor_quat)
+            anchor_ori_b = matrix_from_quat(quat_diff)[:, :2].reshape(-1).astype(np.float32)
+
+            q_offset = self.qj - self.config.default_angles
+            obs = np.concatenate(
+                [
+                    motion_q,
+                    motion_dq,
+                    anchor_ori_b,
+                    ang_vel.astype(np.float32),
+                    q_offset.astype(np.float32),
+                    self.dqj.astype(np.float32),
+                    self.action.astype(np.float32),
+                ],
+                dtype=np.float32,
+            )
+
+            if self.policy_time_input_name is None:
+                time_step = None
+            elif self.motion_loader.length > 1:
+                time_step = np.array([[motion_idx / float(self.motion_loader.length - 1)]], dtype=np.float32)
+            else:
+                time_step = np.zeros((1, 1), dtype=np.float32)
+        if obs.shape[0] != self.config.num_obs:
+            raise ValueError(
+                f"Observation dimension mismatch: config={self.config.num_obs}, runtime={obs.shape[0]}."
+            )
         return obs, time_step
 
     def scale_action(self, action: np.ndarray) -> np.ndarray:
@@ -328,7 +381,7 @@ class Controller:
             return self.config.default_angles + action * float(self.config.action_scale.item())
         if self.config.action_scale.shape == action.shape:
             return self.config.default_angles + action * self.config.action_scale
-        raise ValueError("action_scale must be a scalar or a 29D vector.")
+        raise ValueError(f"action_scale must be a scalar or a {self.config.num_actions}D vector.")
 
     def run_policy(self, obs: np.ndarray, time_step: np.ndarray | None) -> np.ndarray:
         inputs = {self.policy_obs_input_name: obs.reshape(1, -1).astype(np.float32)}
@@ -340,6 +393,30 @@ class Controller:
         return np.asarray(action, dtype=np.float32).reshape(-1)
 
     def run(self) -> None:
+        a_pressed = self.remote_controller.button[KeyMap.A] == 1
+        y_pressed = self.remote_controller.button[KeyMap.Y] == 1
+        if a_pressed and not self.prev_a_pressed and self.active_task != "beyondmimic":
+            self.activate_task("beyondmimic")
+        elif y_pressed and not self.prev_y_pressed and self.active_task != "velocity_flat":
+            self.activate_task("velocity_flat")
+        self.prev_a_pressed = a_pressed
+        self.prev_y_pressed = y_pressed
+
+        if self.active_task is None:
+            loop_start = time.time()
+            for i in range(len(self.config.joint2motor_idx)):
+                motor_idx = self.config.joint2motor_idx[i]
+                self.low_cmd.motor_cmd[motor_idx].q = float(self.config.default_angles[i])
+                self.low_cmd.motor_cmd[motor_idx].qd = 0.0
+                self.low_cmd.motor_cmd[motor_idx].kp = float(self.config.kps[i])
+                self.low_cmd.motor_cmd[motor_idx].kd = float(self.config.kds[i])
+                self.low_cmd.motor_cmd[motor_idx].tau = 0.0
+            self.send_cmd(self.low_cmd)
+            elapsed = time.time() - loop_start
+            if elapsed < self.config.control_dt:
+                time.sleep(self.config.control_dt - elapsed)
+            return
+
         loop_start = time.time()
 
         for i, motor_idx in enumerate(self.config.joint2motor_idx):
@@ -371,21 +448,25 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("net", type=str, help="network interface")
-    parser.add_argument("config", type=str, nargs="?", default="adam_sp.yaml", help="config file in configs/")
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(script_dir))
-    config_path = os.path.join(project_root, "deploy", "deploy_real", "configs", args.config)
-    config = Config(config_path)
+    config_filename_by_task = {
+        "beyondmimic": "adam_sp_beyondmimic.yaml",
+        "velocity_flat": "adam_sp_velocity_flat.yaml",
+    }
+    config_by_task = {
+        task_name: Config(os.path.join(project_root, "deploy", "deploy_real", "configs", cfg_name))
+        for task_name, cfg_name in config_filename_by_task.items()
+    }
 
     ChannelFactoryInitialize(1, args.net)
-    controller = Controller(config)
+    controller = Controller(config_by_task["beyondmimic"], config_by_task)
 
     try:
         controller.zero_torque_state()
         controller.move_to_default_pos()
-        controller.default_pos_state()
         while True:
             try:
                 controller.run()

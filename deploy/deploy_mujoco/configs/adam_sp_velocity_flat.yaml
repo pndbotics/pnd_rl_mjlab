@@ -1,0 +1,21 @@
+# Adam SP 23 DOF Velocity Flat MuJoCo 部署配置
+task_type: "velocity_flat"
+policy_path: "{PROJECT_ROOT}/deploy/models/adam_sp_velocity_flat/policy.onnx"
+xml_path: "{PROJECT_ROOT}/deploy/adam_despription/scene_23dof.xml"
+
+simulation_duration: 120.0
+simulation_dt: 0.005
+control_decimation: 4
+
+# 固定速度指令: [lin_vel_x, lin_vel_y, ang_vel_z]
+velocity_commands: [0.5, 0.0, 0.0]
+# 23 DoF indices on the 29-actuator model: exclude wrist joints [19,20,21,26,27,28]
+velocity_joint_indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 23, 24, 25]
+
+kps: [300.0, 600.0, 300.0, 300.0, 160.0, 70.0, 300.0, 600.0, 300.0, 300.0, 160.0, 70.0, 400.0, 400.0, 400.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0]
+kds: [7.0, 10.0, 2.0, 7.0, 3.5, 2.0, 7.0, 10.0, 2.0, 7.0, 3.5, 2.0, 11.0, 11.0, 11.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0]
+default_angles: [-0.32, 0.0, -0.18, 0.66, -0.39, 0.0, -0.32, 0.0, 0.18, 0.66, -0.39, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, -0.3, 0.0, -0.1, 0.0, -0.3]
+action_scale: 0.5
+
+num_actions: 23
+num_obs: 78

@@ -1,0 +1,158 @@
+# Adam SP Velocity Policy Deployment Configuration
+# Generated from training configuration (adam_sp_constant.py)
+# This file provides fallback parameters when ONNX metadata_props are not available
+# 
+# Joint order (23 observed joints, excluding wrist joints):
+#   left_leg(6): hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+#   right_leg(6): hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+#   waist(3): roll, pitch, yaw
+#   left_arm(4): shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+#   right_arm(4): shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+
+# Joint ID mapping (23 observed joints)
+# Note: This is for reference only - actual mapping handled by Controller
+joint_ids_map: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]
+
+# Control step size (seconds) - 50Hz control frequency
+step_dt: 0.02
+
+# Joint stiffness (Kp) - PD controller gains
+# From actuator configs in adam_sp_constant.py:
+#   HIPPITCH_KNEEPITCH: 300.0
+#   HIPROLL: 600.0
+#   HIPYAW: 300.0
+#   ANKLEPITCH: 130.0
+#   ANKLEROLL: 70.0
+#   WAIST: 400.0
+#   ARM_SHOULDER: 60.0
+#   ARM_ELBOW: 60.0
+# Order: left_leg(6) -> right_leg(6) -> waist(3) -> left_arm(4) -> right_arm(4)
+stiffness: [
+  300.0, 600.0, 300.0, 300.0, 130.0, 70.0,  # left_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+  300.0, 600.0, 300.0, 300.0, 130.0, 70.0,  # right_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+  400.0, 400.0, 400.0,                       # waist: roll, pitch, yaw
+  60.0, 60.0, 60.0, 60.0,                   # left_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+  60.0, 60.0, 60.0, 60.0                    # right_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+]
+
+# Joint damping (Kd) - PD controller gains
+# From actuator configs in adam_sp_constant.py:
+#   HIPPITCH_KNEEPITCH: 7.0
+#   HIPROLL: 10.0
+#   HIPYAW: 2.0
+#   ANKLEPITCH: 3.5
+#   ANKLEROLL: 2.0
+#   WAIST: 11.0
+#   ARM_SHOULDER: 3.0
+#   ARM_ELBOW: 3.0
+# Order: same as stiffness
+damping: [
+  7.0, 10.0, 2.0, 7.0, 3.5, 2.0,  # left_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+  7.0, 10.0, 2.0, 7.0, 3.5, 2.0,  # right_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+  11.0, 11.0, 11.0,                # waist: roll, pitch, yaw
+  3.0, 3.0, 3.0, 3.0,              # left_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+  3.0, 3.0, 3.0, 3.0               # right_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+]
+
+# Default joint positions (radians)
+# From HOME_KEYFRAME in adam_sp_constant.py and joint_config.py
+# Note: joint_config.py uses -0.32 for ankle_pitch (matches training), HOME_KEYFRAME uses -0.32
+# We use joint_config.py values to match training environment exactly
+# Order: same as stiffness/damping
+default_joint_pos: [
+  -0.32, 0.0, -0.18, 0.66, -0.39, 0.0,  # left_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+  -0.32, 0.0, 0.18, 0.66, -0.39, 0.0,   # right_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+  0.0, 0.0, 0.0,                        # waist: roll, pitch, yaw
+  0.0, 0.1, 0.0, -0.3,                  # left_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+  0.0, -0.1, 0.0, -0.3                  # right_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+]
+
+# Command configuration
+commands:
+  base_velocity:
+    ranges:
+      lin_vel_x: [-0.5, 1.0]  # Linear velocity x range (m/s)
+      lin_vel_y: [-0.5, 0.5]   # Linear velocity y range (m/s)
+      ang_vel_z: [-1.0, 1.0]   # Angular velocity z range (rad/s)
+      heading: null
+
+# Action configuration
+actions:
+  JointPositionAction:
+    clip: null
+    joint_names: [.*]  # Match all joints
+    # Action scale factors (from model output to joint position)
+    # Formula: scale = 0.25 * effort_limit / stiffness
+    # From ADAM_SP_ACTION_SCALE in adam_sp_constant.py
+    # Order: same as stiffness/damping
+#     scale: [
+#       0.192, 0.075, 0.088, 0.192, 0.154, 0.143,  # left_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+#       0.192, 0.075, 0.088, 0.192, 0.154, 0.143,  # right_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+#       0.094, 0.094, 0.094,                        # waist: roll, pitch, yaw
+#       0.271, 0.271, 0.271, 0.125,                 # left_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+#       0.271, 0.271, 0.271, 0.125                  # right_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+# ]
+    scale: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    # Action offset (default joint positions)
+    # Order: same as stiffness/damping
+    offset: [
+      -0.32, 0.0, -0.18, 0.66, -0.32, 0.0,  # left_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+      -0.32, 0.0, 0.18, 0.66, -0.32, 0.0,   # right_leg: hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll
+      0.0, 0.0, 0.0,                        # waist: roll, pitch, yaw
+      0.0, 0.1, 0.0, -0.3,                  # left_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+      0.0, -0.1, 0.0, -0.3                   # right_arm: shoulder_pitch, shoulder_roll, shoulder_yaw, elbow
+]
+    joint_ids: null
+
+# Observation configuration
+observations:
+  # Base angular velocity (3D)
+  base_ang_vel:
+    params: {}
+    clip: null
+    scale: [1.0, 1.0, 1.0]
+    history_length: 1
+  
+  # Projected gravity (3D)
+  projected_gravity:
+    params: {}
+    clip: null
+    scale: [1.0, 1.0, 1.0]
+    history_length: 1
+  
+  # Velocity commands (3D)
+  velocity_commands:
+    params: { command_name: base_velocity }
+    clip: null
+    scale: [1.0, 1.0, 1.0]
+    history_length: 1
+  
+  # Relative joint positions (23D)
+  joint_pos_rel:
+    params: {}
+    clip: null
+    scale: [
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+]
+    history_length: 1
+  
+  # Relative joint velocities (23D)
+  joint_vel_rel:
+    params: {}
+    clip: null
+    scale: [
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+]
+    history_length: 1
+  
+  # Last action (23D)
+  last_action:
+    params: {}
+    clip: null
+    scale: [
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+]
+    history_length: 1
