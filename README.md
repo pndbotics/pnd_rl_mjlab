@@ -164,7 +164,7 @@ python deploy_mujoco/deploy_mujoco.py
 
 ```bash
 cd deploy
-python deploy_real/deploy_real.py
+python deploy_real/deploy_real.py {net_interface}
 ```
 
 **Remote / DDS notes** (see [deploy/README.md](deploy/README.md) for systemd examples and full tables):
