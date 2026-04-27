@@ -9,10 +9,7 @@ import torch
 import tyro
 
 from mjlab.rsl_rl.runners import OnPolicyRunner
-<<<<<<< HEAD
 from mjlab.rsl_rl.utils.exporter import export_policy_as_jit
-=======
->>>>>>> pnd_rl_lab/adam_sp_flat_velocity
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.rl import RslRlVecEnvWrapper
 from mjlab.tasks.registry import list_tasks, load_env_cfg, load_rl_cfg, load_runner_cls
@@ -37,11 +34,8 @@ class PlayConfig:
     video_width: int | None = None
     camera: int | str | None = None
     viewer: Literal["auto", "native", "viser"] = "auto"
-<<<<<<< HEAD
     # Export policy as TorchScript (.pt) to checkpoint dir before playing.
     trace_pt: bool = True
-=======
->>>>>>> pnd_rl_lab/adam_sp_flat_velocity
 
     # Internal flag used by demo script.
     _demo_mode: tyro.conf.Suppress[bool] = False
@@ -162,7 +156,6 @@ def run_play(task_id: str, cfg: PlayConfig):
         runner_cls = load_runner_cls(task_id) or OnPolicyRunner
         runner = runner_cls(env, asdict(agent_cfg), device=device)
         runner.load(str(resume_path), map_location=device)
-<<<<<<< HEAD
         if cfg.trace_pt:
             export_dir = str(log_dir)
             export_policy_as_jit(
@@ -172,8 +165,6 @@ def run_play(task_id: str, cfg: PlayConfig):
                 filename="policy.pt",
             )
             print(f"[INFO] Traced PT saved to {log_dir / 'policy.pt'}")
-=======
->>>>>>> pnd_rl_lab/adam_sp_flat_velocity
         policy = runner.get_inference_policy(device=device)
 
     # Handle "auto" viewer selection.
