@@ -335,10 +335,6 @@
 					<joint name="waistPitch" class="waist_pitch" />
 					<geom mesh="waistPitch_0" material="black" class="visual" />
 					<geom mesh="waistPitch_1" class="visual" />
-					<body name="camera_body" pos="0.09097 0 0.032">
-						<geom type="mesh" mesh="d455" quat="0.9877 0 0.1564 0" />
-						<camera name="depth_camera" mode="fixed" quat="0.6406 0.2982 -0.2982 -0.6406" fovy="87" />
-					</body>
 					<body name="torso" pos="0 0.0005 0.053">
 						<inertial pos="-0.00183601 0.00056583 0.166624" quat="0.999918 0.00136566 0.0120111 0.00418418" mass="13.4634" diaginertia="0.211446 0.168649 0.0770067"/>
 						<joint name="waistYaw" class="waist_yaw" />
@@ -347,7 +343,6 @@
 						<geom mesh="torso_2" class="visual" />
 						<geom mesh="torso_3" class="visual" />
 						<geom mesh="torso_4" material="black" class="visual" />
-						<camera name="camera1" mode="fixed" pos="0 0 0.5" quat="1 1 -1 -1" />
 						<geom name="torso" size="0.13" pos="0 0 0.15" class="collision" />
 						<body name="shoulderPitchLeft" pos="0 0.165094 0.25923" quat="0.984807 0.17365 0 0">
 							<inertial pos="0.00542694 0.0268987 0.00010792" quat="-0.0545235 0.707235 0.0545271 0.702761" mass="0.216148" diaginertia="0.000380648 0.000322754 0.000187228"/>
