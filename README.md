@@ -128,9 +128,7 @@ python scripts/play.py Mjlab-Tracking-Flat-Adam-SP --motion_file=mjlab/motions/a
 
 - During training, policy.onnx and policy.onnx.data are also exported for deployment onto physical robots.
 
-For a **Python-based** FSM (passive, fixed pose, locomotion, Beyond Mimic) in MuJoCo or on-robot DDS, see **[deploy/README.md](deploy/README.md)** and **Section 4.1** below.
-
-
+For a **Python-based** FSM (passive, fixed pose, locomotion, Beyond Mimic) in MuJoCo or on-robot DDS, see **[deploy/README.md](deploy/deploy_real/README.md)** and **Section 4.1** below.
 
 ### 4. Deployment
 
@@ -160,14 +158,14 @@ python deploy_mujoco/deploy_mujoco.py
 | **SELECT** press | Quit |
 | Sticks | Velocity commands (locomotion) |
 
-**Real robot (DDS)** — requires the vendor SDK (`pndbotics_sdk_py`) and DDS network settings in `deploy/deploy_real/config/real.yaml`:
+**Real robot (DDS)** — requires the [pnd_sdk_python](https://github.com/pndbotics/pnd_sdk_python) and DDS network settings in `deploy/deploy_real/config/real.yaml`:
 
 ```bash
 cd deploy
 python deploy_real/deploy_real.py {net_interface}
 ```
 
-**Remote / DDS notes** (see [deploy/README.md](deploy/README.md) for systemd examples and full tables):
+**Remote / DDS notes** ( see **[deploy/README.md](deploy/deploy_real/README.md)** for systemd examples and full tables):
 
 - Enter control after pressing **L0 + R0** on the D-pad (mapping details: `deploy/common/remote_controller.py`).
 - **START**: fixed pose · **A**: Beyond Mimic · **Y**: locomotion · **B** / **A+RB**: passive · **SELECT**: exit loop.
