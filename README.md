@@ -13,12 +13,10 @@ and sim-to-real deployment.
 
 <div align="center">
 
-| <div align="center">  MuJoCo </div>                                                                                                                                           | <div align="center"> Physical </div>                                                                                                                                               |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <div style="width:250px; height:150px; overflow:hidden;"><img src="doc/gif/adam_sp-velocity.gif" style="width:100%; height:100%; object-fit:cover; object-position:center;"></div> | <div style="width:250px; height:150px; overflow:hidden;"><img src="doc/gif/adam_sp-velocity-real.gif" style="width:100%; height:100%; object-fit:cover; object-position:center;"></div> |
-
+| <div align="center">  Mujoco </div> |  <div align="center"> Physical </div> |
+|--- | --- |
+| <img src="doc/gif/adam_sp-velocity.gif" width="240px">| <img src="doc/gif/adam_sp-velocity-real.gif" width="240px">|
 </div>
-
 
 ## 📦 Installation and Configuration
 
