@@ -1,0 +1,31 @@
+# Adam Pro 23 DOF Velocity Flat 真机部署配置
+# 相比 Adam SP 多 2 个 neck 关节（motor 15/16），不参与策略控制，固定 0 rad
+task_type: "velocity_flat"
+control_dt: 0.02
+
+msg_type: "adam_pro"
+imu_type: "pelvis"
+num_motors: 31
+
+lowcmd_topic: "rt/lowcmd"
+lowstate_topic: "rt/lowstate"
+
+policy_path: "{PROJECT_ROOT}/deploy/models/adam_sp_velocity_flat/policy.onnx"
+velocity_commands: [0.5, 0.0, 0.0]
+
+# 策略 23 关节 -> LowState/LowCmd motor 下标（跳过 neck 15/16 与 wrist yaw 21/28）
+joint2motor_idx: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 24, 25, 26, 27]
+action_output_to_target_idx: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+
+# neck 关节固定 0 rad（不参与策略控制）
+fixed_motor_joints:
+  - {motor_idx: 15, q: 0.0, kp: 60.0, kd: 3.0}
+  - {motor_idx: 16, q: 0.0, kp: 60.0, kd: 3.0}
+
+kps: [300, 600, 300, 300, 130, 70, 300, 600, 300, 300, 130, 70, 400, 400, 400, 60, 60, 60, 60, 60, 60, 60, 60]
+kds: [7, 10, 2, 7, 3.5, 2, 7, 10, 2, 7, 3.5, 2, 11, 11, 11, 3, 3, 3, 3, 3, 3, 3, 3]
+default_angles: [-0.32, 0.0, -0.18, 0.66, -0.39, 0.0, -0.32, 0.0, 0.18, 0.66, -0.39, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, -0.3, 0.0, -0.1, 0.0, -0.3]
+action_scale: 0.5
+
+num_actions: 23
+num_obs: 78

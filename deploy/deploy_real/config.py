@@ -22,8 +22,10 @@ class Config:
         self.control_dt = float(config["control_dt"])
         self.msg_type = config["msg_type"]
         self.imu_type = config.get("imu_type", "pelvis")
+        self.num_motors = int(config.get("num_motors", 29))
         self.lowcmd_topic = config["lowcmd_topic"]
         self.lowstate_topic = config["lowstate_topic"]
+        self.fixed_motor_joints = list(config.get("fixed_motor_joints", []))
 
         self.task_type = str(config.get("task_type", "beyondmimic")).strip().lower()
         self.policy_path = _resolve_path(config["policy_path"], project_root)
@@ -51,8 +53,12 @@ class Config:
 
         if self.task_type not in {"beyondmimic", "velocity_flat"}:
             raise ValueError(f"Unsupported task_type: {self.task_type}.")
-        if self.msg_type != "adam_sp":
-            raise ValueError("This Beyond Mimic deployment currently only supports msg_type='adam_sp'.")
+        if self.msg_type not in {"adam_sp", "adam_pro"}:
+            raise ValueError("Supported msg_type values: 'adam_sp', 'adam_pro'.")
+        if self.msg_type == "adam_sp" and self.num_motors != 29:
+            raise ValueError("adam_sp deployment expects num_motors=29.")
+        if self.msg_type == "adam_pro" and self.num_motors != 31:
+            raise ValueError("adam_pro deployment expects num_motors=31.")
         if self.imu_type != "pelvis":
             raise ValueError("This Beyond Mimic deployment currently only supports imu_type='pelvis'.")
         if self.policy_path is None:
@@ -65,6 +71,14 @@ class Config:
             raise ValueError(f"kps and kds must contain {self.num_actions} values.")
         if self.action_output_to_target_idx.shape != (self.num_actions,):
             raise ValueError(f"action_output_to_target_idx must contain {self.num_actions} values.")
+        for entry in self.fixed_motor_joints:
+            if "motor_idx" not in entry:
+                raise ValueError("Each fixed_motor_joints entry must include motor_idx.")
+            if int(entry["motor_idx"]) < 0 or int(entry["motor_idx"]) >= self.num_motors:
+                raise ValueError(
+                    f"fixed_motor_joints motor_idx out of range: {entry['motor_idx']} "
+                    f"(num_motors={self.num_motors})."
+                )
 
         if self.task_type == "beyondmimic":
             if self.num_actions != 29:

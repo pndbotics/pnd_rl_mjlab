@@ -6,3 +6,7 @@ wandb
 MUJOCO_LOG.TXT
 *.pyc
 *.ipynb_checkpoints/
+
+# Python cache
+__pycache__/
+*.py[cod]

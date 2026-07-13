@@ -9,6 +9,12 @@ from pathlib import Path
 from typing import Literal, cast
 import tyro
 
+# Ensure local repository package takes precedence over similarly named
+# namespace packages that may be present in the Python environment.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 from mjlab.rsl_rl.runners import OnPolicyRunner
 from mjlab.envs import ManagerBasedRlEnv, ManagerBasedRlEnvCfg
 from mjlab.rl import RslRlOnPolicyRunnerCfg, RslRlVecEnvWrapper

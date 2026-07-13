@@ -198,8 +198,8 @@ class Controller:
         self.prev_a_pressed = False
         self.prev_y_pressed = False
 
-        self.low_cmd = pnd_adam_msg_dds__LowCmd_(29)
-        self.low_state = pnd_adam_msg_dds__LowState_(29)
+        self.low_cmd = pnd_adam_msg_dds__LowCmd_(base_config.num_motors)
+        self.low_state = pnd_adam_msg_dds__LowState_(base_config.num_motors)
         self.qj = np.zeros(0, dtype=np.float32)
         self.dqj = np.zeros(0, dtype=np.float32)
         self.action = np.zeros(0, dtype=np.float32)
@@ -262,7 +262,19 @@ class Controller:
         self.remote_controller.set(self.low_state.wireless_remote)
 
     def send_cmd(self, cmd: LowCmd_) -> None:
+        self.apply_fixed_motor_cmds(cmd)
         self.lowcmd_publisher_.Write(cmd)
+
+    def apply_fixed_motor_cmds(self, cmd: LowCmd_ | None = None) -> None:
+        target_cmd = self.low_cmd if cmd is None else cmd
+        for entry in self.config.fixed_motor_joints:
+            motor_idx = int(entry["motor_idx"])
+            motor_cmd = target_cmd.motor_cmd[motor_idx]
+            motor_cmd.q = float(entry.get("q", 0.0))
+            motor_cmd.qd = 0.0
+            motor_cmd.kp = float(entry.get("kp", 0.0))
+            motor_cmd.kd = float(entry.get("kd", 0.0))
+            motor_cmd.tau = 0.0
 
     def wait_for_low_state(self) -> None:
         print("Successfully connected to the robot.")
@@ -448,21 +460,37 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("net", type=str, help="network interface")
+    parser.add_argument(
+        "--robot",
+        type=str,
+        default="adam_sp",
+        choices=["adam_sp", "adam_pro"],
+        help="robot platform (default: adam_sp)",
+    )
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(script_dir))
+    config_prefix = "adam_pro" if args.robot == "adam_pro" else "adam_sp"
     config_filename_by_task = {
-        "beyondmimic": "adam_sp_beyondmimic.yaml",
-        "velocity_flat": "adam_sp_velocity_flat.yaml",
+        "beyondmimic": f"{config_prefix}_beyondmimic.yaml",
+        "velocity_flat": f"{config_prefix}_velocity_flat.yaml",
     }
-    config_by_task = {
-        task_name: Config(os.path.join(project_root, "deploy", "deploy_real", "configs", cfg_name))
-        for task_name, cfg_name in config_filename_by_task.items()
-    }
+    config_by_task = {}
+    for task_name, cfg_name in config_filename_by_task.items():
+        cfg_path = os.path.join(project_root, "deploy", "deploy_real", "configs", cfg_name)
+        if os.path.isfile(cfg_path):
+            config_by_task[task_name] = Config(cfg_path)
+
+    if "velocity_flat" not in config_by_task:
+        raise FileNotFoundError(f"Missing velocity_flat config for robot={args.robot}.")
+
+    default_task = "velocity_flat" if args.robot == "adam_pro" else "beyondmimic"
+    if default_task not in config_by_task:
+        default_task = "velocity_flat"
 
     ChannelFactoryInitialize(1, args.net)
-    controller = Controller(config_by_task["beyondmimic"], config_by_task)
+    controller = Controller(config_by_task[default_task], config_by_task)
 
     try:
         controller.zero_torque_state()
