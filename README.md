@@ -126,15 +126,53 @@ python scripts/play.py Mjlab-Tracking-Flat-Adam-SP --motion_file=mjlab/motions/a
 
 - During training, policy.onnx and policy.onnx.data are also exported for deployment onto physical robots.
 
-For a **Python-based** FSM (passive, fixed pose, locomotion, Beyond Mimic) in MuJoCo or on-robot DDS, see **[deploy/README.md](deploy/deploy_real/README.md)** and **Section 4.1** below.
+For on-robot DDS deployment (including `--robot` selection) and MuJoCo sim deploy, see **Section 4** below and **[deploy/deploy_real/README.md](deploy/deploy_real/README.md)**.
 
 ### 4. Deployment
 
-#### 4.1 Python control stack (`deploy/`)
+#### 4.1 Real robot (DDS)
 
-This repository includes a Python deploy package under **`deploy/`**: a finite-state machine switches between passive mode, fixed-pose interpolation, TorchScript locomotion, and ONNX Beyond Mimic. Per-policy settings live in `deploy/policy/*/config/*.yaml`.
+Requires [pnd_sdk_python](https://github.com/pndbotics/pnd_sdk_python), plus `numpy` / `pyyaml` / `onnxruntime`. Configs live under `deploy/deploy_real/configs/`.
 
-**MuJoCo (simulation)** — requires `mujoco`, `numpy`, `pyyaml`, and policy deps (`torch` / `onnxruntime` as needed):
+```bash
+cd deploy/deploy_real
+python deploy_real.py <net_interface> --robot <robot>
+```
+
+| Argument | Description |
+|----------|-------------|
+| `net_interface` | NIC used for DDS (e.g. `enp3s0`) |
+| `--robot` | Robot platform: `adam_sp` (default) or `adam_pro` |
+
+Examples:
+
+```bash
+# Adam SP (default) — Beyond Mimic when available, else velocity
+python deploy_real.py enp3s0
+python deploy_real.py enp3s0 --robot adam_sp
+
+# Adam Pro — velocity flat policy
+python deploy_real.py enp3s0 --robot adam_pro
+```
+
+`--robot` selects the matching YAML configs:
+
+| `--robot` | Configs used |
+|-----------|----------------|
+| `adam_sp` | `adam_sp_beyondmimic.yaml`, `adam_sp_velocity_flat.yaml` |
+| `adam_pro` | `adam_pro_velocity_flat.yaml` |
+
+**Startup / remote** (see also **[deploy/deploy_real/README.md](deploy/deploy_real/README.md)**):
+
+1. Stabilize or hoist the robot; configure DDS networking.
+2. Start the program and wait until LowState is connected.
+3. **START**: interpolate to `default_angles` · **A**: enter policy control · **B** / `Ctrl+C`: exit.
+
+**Swap models or motion**: update `policy_path` / `motion_path` in the corresponding YAML under `deploy/deploy_real/configs/`; adjust `num_actions` and observation code if dimensions change.
+
+#### 4.2 MuJoCo simulation (`deploy_mujoco`)
+
+Requires `mujoco`, `numpy`, `pyyaml`, and `onnxruntime` as needed:
 
 ```bash
 cd deploy
@@ -142,37 +180,7 @@ python deploy_mujoco/deploy_mujoco.py
 ```
 
 - Scene and timing: `deploy/deploy_mujoco/config/mujoco.yaml` (`xml_path` is relative to the **`deploy/`** directory).
-- Keyboard: `7` / `8` adjust hoist height, `9` toggles suspension force; standing policies disable suspension so the character does not float.
-
-**Gamepad (simulation)**:
-
-| Input | Action |
-|--------|--------|
-| **B** release | Passive |
-| **START** release | Fixed pose (blend to default angles) |
-| **A** + **RB** held | Passive |
-| **A** release | Beyond Mimic (needs motion `.npz` + ONNX under `deploy/policy/adam_beyond_mimic/`) |
-| **Y** release | Locomotion |
-| **SELECT** press | Quit |
-| Sticks | Velocity commands (locomotion) |
-
-**Real robot (DDS)** — requires the [pnd_sdk_python](https://github.com/pndbotics/pnd_sdk_python) and DDS network settings in `deploy/deploy_real/config/real.yaml`:
-
-```bash
-cd deploy
-python deploy_real/deploy_real.py {net_interface}
-```
-
-**Remote / DDS notes** ( see **[deploy/README.md](deploy/deploy_real/README.md)** for systemd examples and full tables):
-
-- Enter control after pressing **L0 + R0** on the D-pad (mapping details: `deploy/common/remote_controller.py`).
-- **START**: fixed pose · **A**: Beyond Mimic · **Y**: locomotion · **B** / **A+RB**: passive · **SELECT**: exit loop.
-
-**Swap models or motion**: place weights in the policy’s `deploy/policy/<name>/model/` and update `policy_path` / `motion_path` in that policy’s YAML; adjust `num_actions` and observation code if dimensions change.
-
-
-
-</div>
+- Keyboard: `7` / `8` adjust hoist height, `9` toggles suspension force.
 
 
 
