@@ -235,5 +235,8 @@ if __name__ == "__main__":
   from mjlab.entity.entity import Entity
 
   robot = Entity(get_adam_sp_23dof_robot_cfg())
-
-  viewer.launch(robot.spec.compile())
+  model = robot.spec.compile()
+  model.opt.gravity[:] = (0.0, 0.0, 0.0)
+  data = mujoco.MjData(model)
+  mujoco.mj_resetDataKeyframe(model, data, model.key("init_state").id)
+  viewer.launch(model, data=data)
