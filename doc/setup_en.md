@@ -69,11 +69,7 @@ It is designed to leverage NVIDIA GPUs for high-performance simulation and rende
 Install it using the following command:
 
 ```bash
-pip install "mujoco-warp@git+https://github.com/google-deepmind/mujoco_warp@9491175b7cbea87e28d3e3e67733095317c33398"
-```
-or
-```bash
-pip install "git+ssh://git@github.com/google-deepmind/mujoco_warp@9491175b7cbea87e28d3e3e67733095317c33398"
+pip install "mujoco-warp==3.5.0"
 ```
 
 #### 2.2.2 Install Remaining Dependencies
