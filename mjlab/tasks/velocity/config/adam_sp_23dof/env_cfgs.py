@@ -73,7 +73,7 @@ def adam_sp_23dof_rough_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   cfg.rewards["pose"].params["std_standing"] = {".*": 0.05}
   cfg.rewards["pose"].params["std_walking"] = {
     # Lower body.
-    r".*hip_pitch.*": 0.5,
+    r".*hip_pitch.*": 10.0,
     r".*hip_roll.*": 0.15,
     r".*hip_yaw.*": 0.15,
     r".*knee.*": 0.5,
@@ -91,7 +91,7 @@ def adam_sp_23dof_rough_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   }
   cfg.rewards["pose"].params["std_running"] = {
     # Lower body.
-    r".*hip_pitch.*": 0.5,
+    r".*hip_pitch.*": 10.0,
     r".*hip_roll.*": 0.25,
     r".*hip_yaw.*": 0.25,
     r".*knee.*": 0.5,

@@ -1,0 +1,32 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/root/pnd_rl_mjlab/scripts/train.py", line 19, in <module>
+    from mjlab.envs import ManagerBasedRlEnv, ManagerBasedRlEnvCfg
+  File "/root/pnd_rl_mjlab/mjlab/envs/__init__.py", line 1, in <module>
+    from mjlab.envs.manager_based_rl_env import ManagerBasedRlEnv as ManagerBasedRlEnv
+  File "/root/pnd_rl_mjlab/mjlab/envs/manager_based_rl_env.py", line 12, in <module>
+    from mjlab.envs.mdp.events import reset_scene_to_default
+  File "/root/pnd_rl_mjlab/mjlab/envs/mdp/__init__.py", line 1, in <module>
+    from .actions import *  # noqa: F403
+    ^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/pnd_rl_mjlab/mjlab/envs/mdp/actions/__init__.py", line 1, in <module>
+    from mjlab.envs.mdp.actions.actions import JointEffortAction as JointEffortAction
+  File "/root/pnd_rl_mjlab/mjlab/envs/mdp/actions/actions.py", line 11, in <module>
+    from mjlab.managers.action_manager import ActionTerm, ActionTermCfg
+  File "/root/pnd_rl_mjlab/mjlab/managers/__init__.py", line 3, in <module>
+    from mjlab.managers.action_manager import ActionManager as ActionManager
+  File "/root/pnd_rl_mjlab/mjlab/managers/action_manager.py", line 12, in <module>
+    from mjlab.managers.manager_base import ManagerBase, ManagerTermBase
+  File "/root/pnd_rl_mjlab/mjlab/managers/manager_base.py", line 11, in <module>
+    from mjlab.managers.scene_entity_config import SceneEntityCfg
+  File "/root/pnd_rl_mjlab/mjlab/managers/scene_entity_config.py", line 7, in <module>
+    from mjlab.scene import Scene
+  File "/root/pnd_rl_mjlab/mjlab/scene/__init__.py", line 1, in <module>
+    from mjlab.scene.scene import Scene as Scene
+  File "/root/pnd_rl_mjlab/mjlab/scene/scene.py", line 13, in <module>
+    from mjlab.terrains.terrain_importer import TerrainImporter, TerrainImporterCfg
+  File "/root/pnd_rl_mjlab/mjlab/terrains/__init__.py", line 1, in <module>
+    from mjlab.terrains.heightfield_terrains import (
+  File "/root/pnd_rl_mjlab/mjlab/terrains/heightfield_terrains.py", line 17, in <module>
+    import scipy.interpolate as interpolate
+ModuleNotFoundError: No module named 'scipy'

@@ -1,0 +1,33 @@
+nohup: ignoring input
+[INFO] Training with: device=cuda:0, seed=42, rank=0
+[INFO] Logging experiment in directory: logs/rsl_rl/adam_sp_23dof_velocity/2026-07-28_10-23-09
+Setting seed: 42
+Warp 1.17.0.dev20260727 initialized:
+   CUDA Toolkit 12.9, Driver 13.0
+   Devices:
+     "cpu"      : "x86_64"
+     "cuda:0"   : "NVIDIA GeForce RTX 4090" (47 GiB, sm_89, mempool enabled)
+   Kernel cache:
+     /root/.cache/warp/1.17.0.dev20260727
+Traceback (most recent call last):
+  File "/root/pnd_rl_mjlab/scripts/train.py", line 230, in <module>
+    main()
+  File "/root/pnd_rl_mjlab/scripts/train.py", line 226, in main
+    launch_training(task_id=chosen_task, args=args)
+  File "/root/pnd_rl_mjlab/scripts/train.py", line 183, in launch_training
+    run_train(task_id, args, log_dir)
+  File "/root/pnd_rl_mjlab/scripts/train.py", line 98, in run_train
+    env = ManagerBasedRlEnv(
+          ^^^^^^^^^^^^^^^^^^
+  File "/root/pnd_rl_mjlab/mjlab/envs/manager_based_rl_env.py", line 164, in __init__
+    self.sim = Simulation(
+               ^^^^^^^^^^^
+  File "/root/pnd_rl_mjlab/mjlab/sim/sim.py", line 160, in __init__
+    self.use_cuda_graph = self._should_use_cuda_graph()
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/pnd_rl_mjlab/mjlab/sim/sim.py", line 296, in _should_use_cuda_graph
+    driver_ver = wp.context.runtime.driver_version
+                 ^^^^^^^^^^
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/warp/__init__.py", line 603, in __getattr__
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+AttributeError: module 'warp' has no attribute 'context'. Did you mean: 'constant'?

@@ -1,0 +1,41 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/root/pnd_rl_mjlab/scripts/train.py", line 19, in <module>
+    from mjlab.envs import ManagerBasedRlEnv, ManagerBasedRlEnvCfg
+  File "/root/pnd_rl_mjlab/mjlab/envs/__init__.py", line 1, in <module>
+    from mjlab.envs.manager_based_rl_env import ManagerBasedRlEnv as ManagerBasedRlEnv
+  File "/root/pnd_rl_mjlab/mjlab/envs/manager_based_rl_env.py", line 12, in <module>
+    from mjlab.envs.mdp.events import reset_scene_to_default
+  File "/root/pnd_rl_mjlab/mjlab/envs/mdp/__init__.py", line 1, in <module>
+    from .actions import *  # noqa: F403
+    ^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/pnd_rl_mjlab/mjlab/envs/mdp/actions/__init__.py", line 1, in <module>
+    from mjlab.envs.mdp.actions.actions import JointEffortAction as JointEffortAction
+  File "/root/pnd_rl_mjlab/mjlab/envs/mdp/actions/actions.py", line 10, in <module>
+    from mjlab.actuator.actuator import TransmissionType
+  File "/root/pnd_rl_mjlab/mjlab/actuator/__init__.py", line 3, in <module>
+    from mjlab.actuator.actuator import Actuator as Actuator
+  File "/root/pnd_rl_mjlab/mjlab/actuator/actuator.py", line 11, in <module>
+    import mujoco_warp as mjwarp
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/__init__.py", line 26, in <module>
+    from mujoco_warp._src.forward import step as step
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/_src/forward.py", line 20, in <module>
+    from mujoco_warp._src import collision_driver
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/_src/collision_driver.py", line 20, in <module>
+    from mujoco_warp._src.collision_convex import convex_narrowphase
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/_src/collision_convex.py", line 20, in <module>
+    from mujoco_warp._src.collision_gjk import ccd
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/_src/collision_gjk.py", line 21, in <module>
+    from mujoco_warp._src.collision_primitive import Geom
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/_src/collision_primitive.py", line 32, in <module>
+    from mujoco_warp._src.io import BLEEDING_EDGE_MUJOCO
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/_src/io.py", line 25, in <module>
+    from mujoco_warp._src import bvh
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/_src/bvh.py", line 24, in <module>
+    from mujoco_warp._src.types import MJ_MAXVAL
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/_src/types.py", line 191, in <module>
+    class EnableBit(enum.IntFlag):
+  File "/root/miniconda3/envs/pnd_rl_mjlab/lib/python3.11/site-packages/mujoco_warp/_src/types.py", line 202, in EnableBit
+    MULTICCD = mujoco.mjtEnableBit.mjENBL_MULTICCD
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'mujoco._enums.mjtEnableBit' has no attribute 'mjENBL_MULTICCD'
