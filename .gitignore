@@ -2,6 +2,7 @@
 .idea
 outputs
 logs
+*.log
 wandb
 MUJOCO_LOG.TXT
 *.pyc
